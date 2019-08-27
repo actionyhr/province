@@ -1,3 +1,4 @@
+# cmake version
 cmake_minimum_required(VERSION 3.0)
 
 # Project Name
@@ -18,39 +19,28 @@ endif()
 
 # Binary output path
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
-
+set(SERIAL_DIR ${CMAKE_SOURCE_DIR}/include)
 FILE(GLOB HEADER_LIST "${CMAKE_SOURCE_DIR}/src/*.h")
 FILE(GLOB SOURCE_LIST "${CMAKE_SOURCE_DIR}/src/*.cpp")
 
 add_executable(${PROJ_NAME} ${SOURCE_LIST} ${HEADER_LIST})
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJ_NAME})
+include_directories(${SERIAL_DIR})
 
-#set(OpenCV_DIR "C:/ST42Data/Code/opencv3Src/install/x86/vc15/lib") 
-find_package(OpenCV REQUIRED)
+#　OpenCV
+find_package(OpenCV 3.4 REQUIRED)
 
 if(OpenCV_FOUND)
     include_directories(${OpenCV_INCLUDE_DIRS})
     target_link_libraries(${PROJ_NAME} ${OpenCV_LIBS})
 endif()
-# Realsense D435
-set(EZECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 
-SET_PROPERTY(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJ_NAME})
 
+# realsense
 find_package(realsense2 REQUIRED)
-
-if(OpenCV_FOUND)
-    include_directories(${realsense2_INCLUDE_DIRS})
-    target_link_libraries(${PROJ_NAME} ${realsense2_LIBRARY})
-    target_link_libraries(${PROJ_NAME} ${OpenCV_LIBS})
-endif()
-#pcl
-find_package(PCL 1.8.1 REQUIRED)
  
-if(PCL_FOUND)
-    include_directories(${PCL_INCLUDE_DIRS})
-    add_definitions(${PCL_DEFINITIONS})
-    link_directories(${PCL_LIBRARY_DIRS})
-    target_link_libraries(${PROJ_NAME} ${PCL_LIBRARIES})
+if(realsense2_FOUND)
+    include_directories(${realsense2_INCLUDE_DIR})
+    target_include_directories(${PROJ_NAME} PRIVATE ${realsense2_INCLUDE_DIR})
+    target_link_libraries(${PROJ_NAME} ${realsense2_LIBRARY})
 endif()
 
