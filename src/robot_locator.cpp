@@ -63,6 +63,10 @@ void RobotLocator::init(ActD435& d435)
 }
 void RobotLocator::sign_color(cv::Mat &color)
 {
+   blueNum=0;
+   greenNum=0;
+   redNum=0;
+   oriangNum=0;
    cv::Mat color_hsv;
    cv::cvtColor(color,color_hsv,cv::COLOR_BGR2HSV); 
    for(int i=0;i<230;i++)
@@ -81,12 +85,29 @@ void RobotLocator::sign_color(cv::Mat &color)
      const uchar* hsv_data=color_hsv.ptr(i);
       for(int j=0;j<640;j++)
       {
+           if(hsv_data[j*3]>95&&hsv_data[j*3]<115&&hsv_data[j*3+1]>190&&hsv_data[j*3+2]>20&&hsv_data[j*3+2]<150)
+          {
+                    blueNum++;
+          }
+           if(hsv_data[j*3]>60&&hsv_data[j*3]<88&&hsv_data[j*3+1]>100&&hsv_data[j*3+2]>20)
+          {
+                    greenNum++;
+          }
+           if(hsv_data[j*3]>0&&hsv_data[j*3]<5&&hsv_data[j*3+1]>150&&hsv_data[j*3+2]>10)
+          {
+                    redNum++;
+          }
+           if(hsv_data[j*3]>160&&hsv_data[j*3]<180&&hsv_data[j*3+1]>200&&hsv_data[j*3+2]>10)
+          {
+                    redNum++;
+          }
            if(hsv_data[j*3]>5&&hsv_data[j*3]<35&&hsv_data[j*3+1]>100)
           {
                     
                     p[j*3]=0;
                     p[j*3+1]=0;
                     p[j*3+2]=0;
+                    oriangNum++;
           }
           else
           {
@@ -170,17 +191,9 @@ void RobotLocator::imagePrecess(void)
 }
 void RobotLocator::findBoundary(void)
 {
-    
-    cv::TickMeter tk;
-    tk.start();
 	imagePrecess();
-	cv::Point2f corner;
     getBoundaryPoint(SigedColorImage);
     findLine();   
-    float point[3];
-    float pixel[2];
-    tk.stop();
-
 }
 void RobotLocator::getPointFromPixel(float colorPixel[2],float point[3])
 {
@@ -389,14 +402,28 @@ void RobotLocator::findLine()
         cornerAngle=-(90+cornerAngle);
         lineStatus=3;
     }
-    lineStatus=1;
+    if(firstVector.size()==1)
+    {
+        if(boundaryLines.at(0).k<0)
+        {
+          leftDistance=fabs(boundaryLines.at(0).b)/sqrt(boundaryLines.at(0).k*boundaryLines.at(0).k+1);
+          lineStatus=1;
+        }
+        else
+        {
+          rightDistance=fabs(boundaryLines.at(0).b)/sqrt(boundaryLines.at(0).k*boundaryLines.at(0).k+1);
+          lineStatus=2;
+        }
+    }
+    if(firstVector.size()==0)
+    {
+        lineStatus=0;
+    }
     cout<<leftDistance<<" "<<rightDistance<<" "<<cornerAngle<<" ";
-}  
+} 
 void RobotLocator::showImage(void)
 {
         cv::imshow("src", srcImage);
-        //cv::imshow("HSVImage", HSVImage);
-        //cv::imshow("allBallImage", allBallImage);
         cv::imshow("afterLine", afterLine);
         cv::waitKey(1);
 }
