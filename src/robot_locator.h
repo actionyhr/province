@@ -50,6 +50,7 @@ public:
 	void threeDDoundary(void);
 	void highOrderFilter(std::vector<cv::Point2f> &cloud, int order);
 	void findMaxAndIndex(int x[],int length,int& max,int& index);
+	cv::Mat preprocess(void);
 public:
 	float leftDistance = 0.0;
 	float rightDistance = 0.0;

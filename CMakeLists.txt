@@ -19,12 +19,21 @@ endif()
 
 # Binary output path
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
-set(SERIAL_DIR ${CMAKE_SOURCE_DIR}/include)
 FILE(GLOB HEADER_LIST "${CMAKE_SOURCE_DIR}/src/*.h")
 FILE(GLOB SOURCE_LIST "${CMAKE_SOURCE_DIR}/src/*.cpp")
 
 add_executable(${PROJ_NAME} ${SOURCE_LIST} ${HEADER_LIST})
-include_directories(${SERIAL_DIR})
+
+include_directories(/home/action/openvino/openvino/inference_engine/include)
+include_directories(/home/action/openvino/openvino/deployment_tools/inference_engine/samples/common)
+
+find_package(InferenceEngine 2.0 REQUIRED)
+if(InferenceEngine_FOUND)
+	target_link_libraries(${PROJ_NAME} ${InferenceEngine_LIBRARIES})
+endif()
+
+include_directories(${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(${PROJ_NAME} ${CMAKE_SOURCE_DIR}/lib/libgsd.so)
 
 #　OpenCV
 find_package(OpenCV 3.4 REQUIRED)
@@ -33,7 +42,6 @@ if(OpenCV_FOUND)
     include_directories(${OpenCV_INCLUDE_DIRS})
     target_link_libraries(${PROJ_NAME} ${OpenCV_LIBS})
 endif()
-
 
 # realsense
 find_package(realsense2 REQUIRED)

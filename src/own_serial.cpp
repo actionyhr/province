@@ -101,6 +101,22 @@ int own_serial::writeData(float distanceLeft,float distanceRight,float angel,int
         ifWrite = write(fd,&buffData[i],1);
     }
 }
+int own_serial::writeData(char handMsg)
+{
+    uint8_t buffData[5];
+ 
+    buffData[0] = 'G';
+    buffData[1] = 'S';
+    buffData[2] = handMsg;
+    buffData[3] = '\r';
+    buffData[4] = '\n';
+    int ifWrite =0;
+    for (size_t i = 0; i < 5; i++)
+    {
+        ifWrite = write(fd,&buffData[i],1);
+    }
+    return ifWrite;
+}
 static int cnt =0;
 void signal_handler_IO(int status)
 {

@@ -1,10 +1,11 @@
-#include <stdio.h>
 #include "act_d435.h"
 #include "robot_locator.h"
 #include <iostream>
+#include "gesture_detect.h"
 #include "own_serial.h"
 using namespace std;
 #define IFSERIAL   
+extern int foundFlag;
 int main(int argc, char* argv[])
 {
 #ifdef IFSERIAL
@@ -20,9 +21,12 @@ int main(int argc, char* argv[])
 #endif
     ActD435 D435;
     RobotLocator Locator;
-    D435.init();
+    D435.init2();
     Locator.init(D435);
-    Locator.status = DISTANCE_CALCULATE;
+    Locator.status = GESTURE_RECOGNITION;
+    GestureDetector hand;
+    hand.init();
+    int count[7]={ 0 };
     cv::TickMeter tk;
     tk.start();
     while(true)
@@ -34,7 +38,29 @@ int main(int argc, char* argv[])
         {
             case GESTURE_RECOGNITION:
             {
-                
+                cv::Mat temp = Locator.preprocess();
+                int getMsg=hand.detect(temp);
+                char msg;
+                switch (getMsg)
+                {
+                    case 0: count[0]++; break;
+                    case 1: count[1]++; break;
+                    case 2: count[2]++; break;
+                    case 3: count[3]++; break;
+                    case 4: count[4]++; break;
+                    case 5: count[5]++; break;
+                    case 6: count[6]++; break;
+                }
+                for(int i=0;i<7;i++)
+                {
+                    if(count[i]>30)
+                    {
+                        msg=i+1;
+                        Locator.status=DISTANCE_CALCULATE;
+                        ownSerial.writeData(msg);
+                        break;
+                    }
+                }
             }
             break;
 

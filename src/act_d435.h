@@ -4,8 +4,9 @@
 #define ACT_D435_H_
 
 #include <iostream>
-//#include <fstream> 
 #include <fstream>
+#include <mutex>
+#include <thread>
 #include <librealsense2/rs.hpp>
 #include <opencv2/opencv.hpp>
 #include <librealsense2/rsutil.h>
@@ -19,7 +20,6 @@
 
 #define GESTURE_RECOGNITION 	0
 #define DISTANCE_CALCULATE 		1
-
 
 //-- ROI of an object
 typedef struct
@@ -45,6 +45,7 @@ public:
 	~ActD435();
 
 	void init(void);
+        void init2(void);
 	void update(void);
 	inline cv::Mat getSrcImage(void){return srcImage;}
 	inline cv::Mat getDepthImage(void){return depthImage;}

@@ -32,6 +32,7 @@ public:
     int isopen(void);
     int init(int &fd1);
     int writeData(float distanceLeft = 0.0,float distanceRight = 0.0,float angel = 0.0,int status =0);//status为状态 0没有找到 1找到2条边 3找到左边的那条边 4找到右边的那条边
+    int writeData(char handMsg);
     //int signal_handler_IO(int stuas);
     int this_fd = 0;
 private:

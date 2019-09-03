@@ -63,10 +63,10 @@ void RobotLocator::init(ActD435& d435)
 }
 void RobotLocator::sign_color(cv::Mat &color)
 {
-   blueNum=0;
-   greenNum=0;
-   redNum=0;
-   oriangNum=0;
+   int blueNum=0;
+   int greenNum=0;
+   int redNum=0;
+   int oriangNum=0;
    cv::Mat color_hsv;
    cv::cvtColor(color,color_hsv,cv::COLOR_BGR2HSV); 
    for(int i=0;i<230;i++)
@@ -427,6 +427,82 @@ void RobotLocator::showImage(void)
         cv::imshow("afterLine", afterLine);
         cv::waitKey(1);
 }
+int foundFlag;
+cv::Mat RobotLocator::preprocess(void)
+{
+	cv::Mat roi;
+	cv::Mat handImage = cv::Mat::zeros(cv::Size(640, 480), CV_8UC1);
+	cv::Mat contour = cv::Mat::zeros(cv::Size(300, 300), CV_8UC1);
+	vector<vector<cv::Point>> contours;
+	vector<vector<cv::Point>> filterContours;
+	vector<cv::Vec4i> hierarchy;
+	int cnt = 0;
+
+	float depth_pixel[2] = { 0 };
+	float depth_point[3] = { 0 };
+
+	for (int rows = 0; rows < depthImage.rows; rows++)
+	{
+		auto data = depthImage.ptr<short>(rows);	
+		depth_pixel[1] = rows;
+		for (int cols = 0; cols < depthImage.cols; cols++)
+		{
+			int depth = data[cols];
+
+			if (depth > 0 && depth < 800)
+			{			
+				depth_pixel[0] = cols;
+				rs2_deproject_pixel_to_point(depth_point, &depth_intrin, depth_pixel, depth);
+				if (depth_point[1] > -200 && depth_point[1] < 200
+					&& depth_point[0] > -200 && depth_point[0] < 200
+					)
+				{
+					handImage.at<uchar>(rows, cols) = 255;
+          cnt++;
+				}
+			}
+		}
+	}
+
+  if(cnt > 12000)
+  {
+    foundFlag = 1;
+  }
+  else
+  {
+    foundFlag = 0;
+  }
+  
+	cv::Rect rect(155, 0, 350, 350);
+	handImage(rect).copyTo(roi);
+	cv::rectangle(handImage, rect, 255, 5);
+	imshow("src", srcImage);
+	resize(roi, roi, cv::Size(300, 300));
+	cv::Mat dilateStruct = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+	dilate(roi, roi, dilateStruct);
+	dilate(roi, roi, dilateStruct);
+	resize(roi, roi, cv::Size(300, 300));
+	cv::findContours(roi, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+	for (size_t i = 0; i < contours.size(); ++i)
+	{
+		double area = cv::contourArea(contours[i]);
+		if (area > 1000)
+		{
+			filterContours.push_back(contours[i]);
+		}
+	}
+	
+	if (filterContours.size() > 0)
+	{
+		cv::drawContours(contour, filterContours, -1, 255, 2);
+		cv::imshow("contours", contour);
+	}
+	
+	cv::imshow("hand", handImage);
+	cv::waitKey(1);
+	return contour;
+}
+
 RobotLocator::~RobotLocator()
 {
 }
